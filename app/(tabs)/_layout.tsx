@@ -14,6 +14,15 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="device"
+        options={{
+          title: 'Device',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="phone-portrait" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',

@@ -1,24 +1,20 @@
-import { Stack } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import * as SplashScreen from 'expo-splash-screen';
+import { ActivityIndicator, View } from "react-native";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import { Stack } from "expo-router";
 
-// Keep the splash screen visible while we check authentication
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    // Prepare app resources, authentication state, etc.
     async function prepare() {
       try {
-        // Artificial delay to show splash screen
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       } catch (e) {
         console.warn(e);
       } finally {
-        // Ready to hide splash screen
         setIsReady(true);
         SplashScreen.hideAsync();
       }
@@ -29,7 +25,7 @@ export default function RootLayout() {
 
   if (!isReady) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
     );
