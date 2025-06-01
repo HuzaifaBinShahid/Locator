@@ -40,10 +40,27 @@ export default function BiometricsScreen() {
         };
 
         try {
+          // Save locally
           await AsyncStorage.setItem("deviceInfo", JSON.stringify(deviceInfo));
-          console.log("Device info saved");
+          console.log("📱 Device info saved locally");
+
+          // Save to backend
+          const response = await fetch(
+            "http://192.168.10.5:5000/api/saveDeviceInfo",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(deviceInfo),
+            }
+          );
+
+          if (response.ok) {
+            console.log("✅ Device info sent to backend");
+          } else {
+            console.error("❌ Failed to save device info on backend");
+          }
         } catch (error) {
-          console.error("Failed to save device info:", error);
+          console.error("💥 Error saving device info:", error);
         }
 
         router.replace("/(tabs)");
