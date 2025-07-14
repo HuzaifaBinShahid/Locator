@@ -94,24 +94,17 @@ export default function TabHomeScreen() {
   const fetchTodayAttendance = async () => {
     try {
       const headers = await getAuthHeaders();
-      console.log("📡 Fetching attendance with headers:", headers);
 
       const response = await fetch(`${API_BASE_URL}/attendance/today`, {
         headers,
       });
 
-      console.log("📨 Attendance response status:", response.status);
-      console.log("📄 Response headers:", response.headers);
-
       const responseText = await response.text();
-      console.log("📄 Raw response text:", responseText);
 
       let data;
       try {
         data = JSON.parse(responseText);
       } catch (parseError) {
-        console.error("❌ JSON parse error:", parseError);
-        console.error("📄 Response was:", responseText);
         Alert.alert("Error", "Server returned invalid response");
         return;
       }
@@ -124,7 +117,6 @@ export default function TabHomeScreen() {
         Alert.alert("Error", data.message || "Failed to fetch attendance");
       }
     } catch (error) {
-      console.error("Error fetching attendance:", error);
       Alert.alert("Error", "Network error");
     } finally {
       setIsLoading(false);
@@ -181,7 +173,6 @@ export default function TabHomeScreen() {
 
       return null;
     } catch (error) {
-      console.error("Error getting location:", error);
       Alert.alert("Error", "Failed to get your location");
       return null;
     } finally {
@@ -210,7 +201,6 @@ export default function TabHomeScreen() {
         Alert.alert("Error", data.message || "Check-in failed");
       }
     } catch (error) {
-      console.error("Error checking in:", error);
       Alert.alert("Error", "Network error");
     }
   };
@@ -239,7 +229,6 @@ export default function TabHomeScreen() {
         Alert.alert("Error", data.message || "Check-out failed");
       }
     } catch (error) {
-      console.error("Error checking out:", error);
       Alert.alert("Error", "Network error");
     }
   };

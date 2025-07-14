@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,10 +7,18 @@ import {
   ActivityIndicator,
   Alert,
   StyleSheet,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Dimensions,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
 
+const { width, height } = Dimensions.get("window");
 const API_BASE_URL = "http://10.10.50.216:5000/api/auth";
 
 export default function AuthScreen() {
@@ -19,20 +27,56 @@ export default function AuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  console.log("🔐 AuthScreen rendered - isLogin:", isLogin);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const switchMode = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    setIsLogin(!isLogin);
+  };
 
   const handleAuth = async () => {
-    console.log("🚀 Starting auth process...");
     setLoading(true);
     try {
       const endpoint = isLogin ? "/login" : "/signup";
       const body = isLogin
         ? { email, password }
         : { username, email, password };
-      console.log("📡 Making request to:", API_BASE_URL + endpoint);
-      console.log("📦 Request body:", body);
 
       const res = await fetch(API_BASE_URL + endpoint, {
         method: "POST",
@@ -40,22 +84,16 @@ export default function AuthScreen() {
         body: JSON.stringify(body),
       });
 
-      console.log("📨 Response status:", res.status);
       const data = await res.json();
-      console.log("📄 Response data:", data);
 
       if (res.ok && data.token) {
-        console.log("✅ Auth successful, saving token...");
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("user", JSON.stringify(data.user));
-        console.log("🏠 Redirecting to home...");
         router.replace("/");
       } else {
-        console.log("❌ Auth failed:", data.message);
         Alert.alert("Error", data.message || "Authentication failed");
       }
     } catch (e) {
-      console.error("💥 Network error:", e);
       Alert.alert("Error", "Network error - Backend may not be running");
     } finally {
       setLoading(false);
@@ -63,80 +101,232 @@ export default function AuthScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{isLogin ? "Login" : "Sign Up"}</Text>
-      {!isLogin && (
-        <TextInput
-          style={styles.input}
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-          autoCapitalize="none"
-        />
-      )}
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleAuth}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>{isLogin ? "Login" : "Sign Up"}</Text>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => setIsLogin(!isLogin)}>
-        <Text style={styles.switchText}>
-          {isLogin
-            ? "Don't have an account? Sign Up"
-            : "Already have an account? Login"}
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <LinearGradient colors={["#667eea", "#764ba2"]} style={styles.gradient}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View
+            style={[
+              styles.formContainer,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
+              },
+            ]}
+          >
+            <View style={styles.headerContainer}>
+              <Text style={styles.title}>Welcome</Text>
+              <Text style={styles.subtitle}>
+                {isLogin ? "Sign in to continue" : "Create your account"}
+              </Text>
+            </View>
+
+            <View style={styles.inputContainer}>
+              {!isLogin && (
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="person-outline"
+                    size={20}
+                    color="#8E8E93"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Username"
+                    placeholderTextColor="#8E8E93"
+                    value={username}
+                    onChangeText={setUsername}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                </View>
+              )}
+
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="mail-outline"
+                  size={20}
+                  color="#8E8E93"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email"
+                  placeholderTextColor="#8E8E93"
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <View style={styles.inputWrapper}>
+                <Ionicons
+                  name="lock-closed-outline"
+                  size={20}
+                  color="#8E8E93"
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#8E8E93"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-outline" : "eye-off-outline"}
+                    size={20}
+                    color="#8E8E93"
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleAuth}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={
+                  loading ? ["#B0B0B0", "#9E9E9E"] : ["#FF6B6B", "#FF8E53"]
+                }
+                style={styles.buttonGradient}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <Text style={styles.buttonText}>
+                    {isLogin ? "Sign In" : "Sign Up"}
+                  </Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={switchMode} style={styles.switchButton}>
+              <Text style={styles.switchText}>
+                {isLogin
+                  ? "Don't have an account? "
+                  : "Already have an account? "}
+                <Text style={styles.switchTextBold}>
+                  {isLogin ? "Sign Up" : "Sign In"}
+                </Text>
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </ScrollView>
+      </LinearGradient>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#f9f9f9",
   },
-  title: { fontSize: 28, fontWeight: "bold", marginBottom: 24 },
-  input: {
-    width: "100%",
-    padding: 12,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
+  gradient: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+  },
+  formContainer: {
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    borderRadius: 20,
+    padding: 30,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 10,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#2C3E50",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#7F8C8D",
+    textAlign: "center",
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
+    borderRadius: 12,
     marginBottom: 16,
-    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#E9ECEF",
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  input: {
+    flex: 1,
+    height: 50,
+    fontSize: 16,
+    color: "#2C3E50",
+  },
+  eyeIcon: {
+    padding: 4,
   },
   button: {
-    width: "100%",
-    backgroundColor: "#3498db",
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: "hidden",
   },
-  buttonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  switchText: { color: "#3498db", fontSize: 16 },
+  buttonGradient: {
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  switchButton: {
+    alignItems: "center",
+  },
+  switchText: {
+    fontSize: 16,
+    color: "#7F8C8D",
+  },
+  switchTextBold: {
+    fontWeight: "bold",
+    color: "#667eea",
+  },
 });
