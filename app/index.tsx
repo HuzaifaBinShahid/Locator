@@ -43,7 +43,6 @@ export default function BiometricsScreen() {
 
       try {
         await AsyncStorage.setItem("deviceInfo", JSON.stringify(deviceInfo));
-        console.log("📱 Device info saved locally");
 
         const response = await fetch(API_BASE_URL + "/saveDeviceInfo", {
           method: "POST",
@@ -51,13 +50,11 @@ export default function BiometricsScreen() {
           body: JSON.stringify(deviceInfo),
         });
 
-        if (response.ok) {
-          console.log("✅ Device info sent to backend");
-        } else {
-          console.error("❌ Failed to save device info on backend");
+        if (!response.ok) {
+          console.error("Failed to save device info on backend");
         }
       } catch (error) {
-        console.error("💥 Error saving device info:", error);
+        console.error("Error saving device info:", error);
       }
 
       router.replace("/(tabs)");
