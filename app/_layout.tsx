@@ -19,7 +19,6 @@ export default function RootLayout() {
         SplashScreen.hideAsync();
       }
     }
-
     prepare();
   }, []);
 
@@ -32,7 +31,8 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack screenOptions={{ headerShown: false }} initialRouteName="auth">
+      <Stack.Screen name="auth" />
       <Stack.Screen name="index" />
       <Stack.Screen name="home" />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
