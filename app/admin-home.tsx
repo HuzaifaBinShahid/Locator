@@ -100,7 +100,7 @@ export default function AdminHomeScreen() {
       description: "Manage all users and their roles",
       icon: "people-outline",
       color: "#3498db",
-      onPress: () => Alert.alert("Coming Soon", "User management feature"),
+      onPress: () => router.push("/admin-users"),
     },
     {
       title: "Attendance Reports",
