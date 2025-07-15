@@ -19,6 +19,8 @@ const { width } = Dimensions.get("window");
 export default function AdminHomeScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [userStats, setUserStats] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
   const router = useRouter();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -26,6 +28,7 @@ export default function AdminHomeScreen() {
 
   useEffect(() => {
     loadUserData();
+    loadUserStats();
 
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -48,7 +51,6 @@ export default function AdminHomeScreen() {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
 
-        // Check if user is actually admin
         if (parsedUser.role !== "admin") {
           Alert.alert("Access Denied", "You don't have admin privileges");
           router.replace("/");
@@ -59,6 +61,36 @@ export default function AdminHomeScreen() {
       console.error("Error loading user data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserStats = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Error", "No authentication token found");
+        return;
+      }
+
+      const response = await fetch("http://192.168.10.9:5000/api/admin/stats", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setUserStats(data.data);
+      } else {
+        console.error("Failed to fetch user stats:", data.message);
+      }
+    } catch (error) {
+      console.error("Error loading user stats:", error);
+    } finally {
+      setStatsLoading(false);
     }
   };
 
@@ -116,13 +148,13 @@ export default function AdminHomeScreen() {
             },
           ]}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.profileButton}
             onPress={() => router.push("/admin-profile")}
           >
             <Ionicons name="person-circle-outline" size={32} color="#fff" />
           </TouchableOpacity>
-          
+
           <View style={styles.adminBadge}>
             <Ionicons name="shield-checkmark" size={24} color="#fff" />
             <Text style={styles.adminBadgeText}>ADMIN</Text>
@@ -178,16 +210,45 @@ export default function AdminHomeScreen() {
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <Ionicons name="people" size={32} color="#3498db" />
-              <Text style={styles.statNumber}>--</Text>
+              <Text style={styles.statNumber}>
+                {statsLoading ? "..." : userStats?.totalUsers || "0"}
+              </Text>
               <Text style={styles.statLabel}>Total Users</Text>
             </View>
 
             <View style={styles.statCard}>
-              <Ionicons name="time" size={32} color="#2ecc71" />
-              <Text style={styles.statNumber}>--</Text>
-              <Text style={styles.statLabel}>Active Today</Text>
+              <Ionicons name="shield" size={32} color="#2ecc71" />
+              <Text style={styles.statNumber}>
+                {statsLoading ? "..." : userStats?.totalAdmins || "0"}
+              </Text>
+              <Text style={styles.statLabel}>Total Admins</Text>
             </View>
           </View>
+
+          {!statsLoading &&
+            userStats?.recentUsers &&
+            userStats.recentUsers.length > 0 && (
+              <View style={styles.recentUsersContainer}>
+                <Text style={styles.sectionTitle}>Recent Users</Text>
+                {userStats.recentUsers
+                  .slice(0, 3)
+                  .map((recentUser: any, index: number) => (
+                    <View key={index} style={styles.recentUserCard}>
+                      <View style={styles.recentUserIcon}>
+                        <Ionicons name="person" size={20} color="#3498db" />
+                      </View>
+                      <View style={styles.recentUserInfo}>
+                        <Text style={styles.recentUserName}>
+                          {recentUser.username}
+                        </Text>
+                        <Text style={styles.recentUserEmail}>
+                          {recentUser.email}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+              </View>
+            )}
         </View>
       </Animated.View>
     </ScrollView>
@@ -331,5 +392,43 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#7f8c8d",
     textAlign: "center",
+  },
+  recentUsersContainer: {
+    marginTop: 30,
+  },
+  recentUserCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  recentUserIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#ecf0f1",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  recentUserInfo: {
+    flex: 1,
+  },
+  recentUserName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2c3e50",
+    marginBottom: 2,
+  },
+  recentUserEmail: {
+    fontSize: 14,
+    color: "#7f8c8d",
   },
 });
