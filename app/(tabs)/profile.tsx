@@ -1,22 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Alert,
-  ScrollView,
-  Animated,
-  ActivityIndicator,
-  Platform,
-} from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Device from "expo-device";
+import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Animated,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
@@ -185,7 +184,7 @@ export default function ProfileScreen() {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
+        <ActivityIndicator size="large" color="#005b96" />
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
@@ -194,7 +193,7 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <LinearGradient
-        colors={["#667eea", "#764ba2"]}
+        colors={["#011f4b", "#005b96", "#6497b1"]}
         style={styles.headerGradient}
       >
         <Animated.View
@@ -206,43 +205,52 @@ export default function ProfileScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            onPress={showImageOptions}
-            style={styles.avatarContainer}
-          >
-            {imageLoading ? (
-              <View style={styles.avatarPlaceholder}>
-                <ActivityIndicator size="large" color="#667eea" />
-              </View>
-            ) : profileImage ? (
-              <Image source={{ uri: profileImage }} style={styles.avatar} />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Ionicons name="person" size={60} color="#667eea" />
-              </View>
-            )}
-            <View style={styles.cameraIcon}>
-              <Ionicons name="camera" size={20} color="#fff" />
-            </View>
-          </TouchableOpacity>
-
-          <Text style={styles.userName}>{user?.username || "User"}</Text>
-          <Text style={styles.userEmail}>{user?.email || "No email"}</Text>
+          {/* Header content space */}
         </Animated.View>
       </LinearGradient>
+
+      {/* Avatar positioned to overlap blue and white sections */}
+      <Animated.View
+        style={[
+          styles.overlappingAvatarContainer,
+          {
+            opacity: fadeAnim,
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
+        <TouchableOpacity
+          style={styles.avatarContainer}
+          onPress={showImageOptions}
+        >
+          {imageLoading ? (
+            <View style={styles.avatarPlaceholder}>
+              <ActivityIndicator size="large" color="#4CAF50" />
+            </View>
+          ) : profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.avatarPlaceholder}>
+              <Ionicons name="person" size={50} color="#005b96" />
+            </View>
+          )}
+          <View style={styles.cameraIcon}>
+            <Ionicons name="camera" size={16} color="#fff" />
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
 
       <Animated.View
         style={[
           styles.contentContainer,
           {
             opacity: fadeAnim,
-            transform: [{ translateY: Animated.multiply(fadeAnim, -20) }],
           },
         ]}
       >
         <View style={styles.infoCard}>
           <View style={styles.cardHeader}>
-            <Ionicons name="person-circle-outline" size={24} color="#667eea" />
+            <Ionicons name="person-circle-outline" size={24} color="#005b96" />
             <Text style={styles.cardTitle}>Personal Information</Text>
           </View>
 
@@ -261,44 +269,9 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={styles.infoCard}>
-          <View style={styles.cardHeader}>
-            <Ionicons name="phone-portrait-outline" size={24} color="#667eea" />
-            <Text style={styles.cardTitle}>Device Information</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Device Name</Text>
-            <Text style={styles.infoValue}>
-              {deviceInfo?.deviceName || "Unknown"}
-            </Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Brand</Text>
-            <Text style={styles.infoValue}>
-              {deviceInfo?.brand || "Unknown"}
-            </Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Model</Text>
-            <Text style={styles.infoValue}>
-              {deviceInfo?.modelName || "Unknown"}
-            </Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>OS</Text>
-            <Text style={styles.infoValue}>
-              {deviceInfo?.osName || "Unknown"} {deviceInfo?.osVersion || ""}
-            </Text>
-          </View>
-        </View>
-
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
           <LinearGradient
-            colors={["#FF6B6B", "#FF8E53"]}
+            colors={["#D92D20", "#D92D20"]}
             style={styles.logoutGradient}
           >
             <Ionicons name="log-out-outline" size={24} color="#fff" />
@@ -313,22 +286,21 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#b3cde0",
   },
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#666",
+    color: "#03396c",
   },
   headerGradient: {
     paddingTop: 60,
-    paddingBottom: 40,
+    paddingBottom: 80, // Increased to create space for overlapping avatar
     paddingHorizontal: 20,
   },
   profileSection: {
@@ -336,9 +308,9 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     position: "relative",
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  avatar: {
+  profileImage: {
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -359,7 +331,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 8,
     right: 8,
-    backgroundColor: "#667eea",
+    backgroundColor: "#005b96",
     borderRadius: 16,
     width: 32,
     height: 32,
@@ -378,23 +350,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "rgba(255, 255, 255, 0.8)",
   },
+  overlappingAvatarContainer: {
+    position: "absolute",
+    top: 80,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 10,
+  },
   contentContainer: {
     padding: 20,
-    marginTop: -20,
+    marginTop: 40,
   },
   infoCard: {
     backgroundColor: "#fff",
     borderRadius: 16,
     padding: 20,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: 50,
+    marginBottom: 20,
   },
   cardHeader: {
     flexDirection: "row",
@@ -404,7 +377,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#2c3e50",
+    color: "#011f4b",
     marginLeft: 12,
   },
   infoRow: {
@@ -417,21 +390,27 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 16,
-    color: "#7f8c8d",
+    color: "#03396c",
     fontWeight: "500",
   },
   infoValue: {
     fontSize: 16,
-    color: "#2c3e50",
+    color: "#011f4b",
     fontWeight: "600",
     flex: 1,
     textAlign: "right",
   },
   logoutButton: {
-    marginTop: 20,
-    marginBottom: 40,
+    marginHorizontal: "auto",
+    marginVertical: 40,
+    width: "80%",
     borderRadius: 12,
     overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   logoutGradient: {
     flexDirection: "row",
