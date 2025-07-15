@@ -10,6 +10,25 @@ const API_BASE_URL = "http://192.168.10.9:5000/api";
 export default function BiometricsScreen() {
   const router = useRouter();
 
+  const checkUserRoleAndNavigate = async () => {
+    try {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        const user = JSON.parse(userData);
+        // Navigate based on user role
+        if (user.role === "admin") {
+          router.replace("/admin-home");
+          return;
+        }
+      }
+      // Default navigation for regular users
+      router.replace("/(tabs)");
+    } catch (error) {
+      console.error("Error checking user role:", error);
+      router.replace("/(tabs)");
+    }
+  };
+
   useEffect(() => {
     (async () => {
       // const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -57,10 +76,10 @@ export default function BiometricsScreen() {
         console.error("Error saving device info:", error);
       }
 
-      router.replace("/(tabs)");
+      checkUserRoleAndNavigate();
       // } else {
       //   Alert.alert("Authentication failed", "Try again or close app.");
-      //   router.replace("/(tabs)");
+      //   checkUserRoleAndNavigate();
       // }
     })();
   });
