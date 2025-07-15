@@ -5,7 +5,7 @@ import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import { useEffect } from "react";
 
-const API_BASE_URL = "http://10.10.50.216:5000/api";
+const API_BASE_URL = "http://192.168.10.9:5000/api";
 
 export default function BiometricsScreen() {
   const router = useRouter();

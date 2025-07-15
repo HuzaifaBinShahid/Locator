@@ -1,25 +1,25 @@
-import React, { useState, useRef, useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
-  StyleSheet,
   Animated,
+  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Dimensions,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 
 const { width, height } = Dimensions.get("window");
-const API_BASE_URL = "http://10.10.50.216:5000/api/auth";
+const API_BASE_URL = "http://192.168.10.9:5000/api/auth";
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -101,214 +101,259 @@ export default function AuthScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <LinearGradient colors={["#667eea", "#764ba2"]} style={styles.gradient}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
+    <View style={[styles.container, { backgroundColor: isLogin ? "#b3cde0" : "#c8e6c9" }]}>
+      <LinearGradient
+        colors={isLogin ? ["#b3cde0", "#7eb4ff"] : ["#c8e6c9", "#81c784"]}
+        style={styles.backgroundGradient}
+      >
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
-          <Animated.View
-            style={[
-              styles.formContainer,
-              {
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
-              },
-            ]}
+          <ScrollView
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
           >
-            <View style={styles.headerContainer}>
+            <Animated.View
+              style={[
+                styles.formContainer,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
+                },
+              ]}
+            >
               <Text style={styles.title}>Welcome</Text>
               <Text style={styles.subtitle}>
                 {isLogin ? "Sign in to continue" : "Create your account"}
               </Text>
-            </View>
 
-            <View style={styles.inputContainer}>
               {!isLogin && (
-                <View style={styles.inputWrapper}>
-                  <Ionicons
-                    name="person-outline"
-                    size={20}
-                    color="#8E8E93"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Username"
-                    placeholderTextColor="#8E8E93"
-                    value={username}
-                    onChangeText={setUsername}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                  />
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Username</Text>
+                  <View style={styles.inputWrapper}>
+                    <Ionicons
+                      name="person-outline"
+                      size={20}
+                      color="#4CAF50"
+                      style={styles.icon}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter your username"
+                      placeholderTextColor="#999"
+                      value={username}
+                      onChangeText={setUsername}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
                 </View>
               )}
 
-              <View style={styles.inputWrapper}>
-                <Ionicons
-                  name="mail-outline"
-                  size={20}
-                  color="#8E8E93"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  placeholderTextColor="#8E8E93"
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  autoCorrect={false}
-                />
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Email</Text>
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="mail-outline"
+                    size={20}
+                    color={isLogin ? "#005b96" : "#4CAF50"}
+                    style={styles.icon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email"
+                    placeholderTextColor="#999"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    autoCorrect={false}
+                  />
+                </View>
               </View>
 
-              <View style={styles.inputWrapper}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color="#8E8E93"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  placeholderTextColor="#8E8E93"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCorrect={false}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeIcon}
-                >
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>Password</Text>
+                <View style={styles.inputWrapper}>
                   <Ionicons
-                    name={showPassword ? "eye-outline" : "eye-off-outline"}
+                    name="lock-closed-outline"
                     size={20}
-                    color="#8E8E93"
+                    color={isLogin ? "#005b96" : "#4CAF50"}
+                    style={styles.icon}
                   />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your password"
+                    placeholderTextColor="#999"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoCorrect={false}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    style={styles.eyeIcon}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-outline" : "eye-off-outline"}
+                      size={20}
+                      color="#666"
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[styles.button, loading && styles.buttonDisabled]}
+                  onPress={handleAuth}
+                  disabled={loading}
+                >
+                  <LinearGradient
+                    colors={
+                      isLogin ? ["#005b96", "#003a6b"] : ["#4CAF50", "#2E7D32"]
+                    }
+                    style={styles.buttonGradient}
+                  >
+                    {loading ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <>
+                        <Ionicons
+                          name={
+                            isLogin
+                              ? "log-in-outline"
+                              : "checkmark-circle-outline"
+                          }
+                          size={20}
+                          color="#fff"
+                        />
+                        <Text style={styles.buttonText}>
+                          {isLogin ? "Sign In" : "Sign Up"}
+                        </Text>
+                      </>
+                    )}
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
-            </View>
 
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleAuth}
-              disabled={loading}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={
-                  loading ? ["#B0B0B0", "#9E9E9E"] : ["#FF6B6B", "#FF8E53"]
-                }
-                style={styles.buttonGradient}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.buttonText}>
-                    {isLogin ? "Sign In" : "Sign Up"}
+              <View style={styles.switchContainer}>
+                <Text style={styles.switchText}>
+                  {isLogin
+                    ? "Don't have an account? "
+                    : "Already have an account? "}
+                  <Text
+                    style={[
+                      styles.switchButton,
+                      isLogin ? { color: "#4CAF50" } : { color: "#005b96" },
+                    ]}
+                    onPress={switchMode}
+                  >
+                    {isLogin ? "Sign Up" : "Sign In"}
                   </Text>
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={switchMode} style={styles.switchButton}>
-              <Text style={styles.switchText}>
-                {isLogin
-                  ? "Don't have an account? "
-                  : "Already have an account? "}
-                <Text style={styles.switchTextBold}>
-                  {isLogin ? "Sign Up" : "Sign In"}
                 </Text>
-              </Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </ScrollView>
+              </View>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </LinearGradient>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
+    backgroundColor: "#b3cde0",
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 40,
+    padding: 20,
+  },
+  backgroundGradient: {
+    flex: 1,
   },
   formContainer: {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-    borderRadius: 20,
+    backgroundColor: "#fff",
+    borderRadius: 16,
     padding: 30,
+    marginHorizontal: 20,
+    elevation: 4,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   headerContainer: {
     alignItems: "center",
     marginBottom: 30,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "bold",
-    color: "#2C3E50",
-    marginBottom: 8,
+    color: "#011f4b",
+    textAlign: "center",
+    marginBottom: 30,
   },
   subtitle: {
     fontSize: 16,
-    color: "#7F8C8D",
+    color: "#03396c",
     textAlign: "center",
+    marginBottom: 30,
   },
   inputContainer: {
     marginBottom: 20,
   },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#03396c",
+    marginBottom: 8,
+  },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#f8f9fa",
     borderRadius: 12,
-    marginBottom: 16,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: "#E9ECEF",
+    borderColor: "#e9ecef",
   },
-  inputIcon: {
+  inputWrapperFocused: {
+    borderColor: "#005b96",
+    backgroundColor: "#fff",
+  },
+  icon: {
     marginRight: 12,
   },
   input: {
     flex: 1,
-    height: 50,
+    paddingVertical: 16,
     fontSize: 16,
-    color: "#2C3E50",
+    color: "#011f4b",
   },
   eyeIcon: {
-    padding: 4,
+    padding: 8,
+  },
+  buttonContainer: {
+    marginTop: 20,
   },
   button: {
-    marginBottom: 20,
     borderRadius: 12,
     overflow: "hidden",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   buttonGradient: {
-    paddingVertical: 16,
-    alignItems: "center",
+    flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 16,
   },
   buttonDisabled: {
     opacity: 0.7,
@@ -317,16 +362,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
+    marginLeft: 8,
   },
-  switchButton: {
+  switchContainer: {
+    marginTop: 30,
     alignItems: "center",
   },
   switchText: {
     fontSize: 16,
-    color: "#7F8C8D",
+    color: "#03396c",
+  },
+  switchButton: {
+    color: "#005b96",
+    fontWeight: "600",
   },
   switchTextBold: {
     fontWeight: "bold",
-    color: "#667eea",
+    color: "#006aff",
   },
 });
