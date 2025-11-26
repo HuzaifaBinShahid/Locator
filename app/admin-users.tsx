@@ -9,17 +9,21 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import { API_BASE_URL } from "../constants/Config";
 
 function AdminUsersScreen() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const router = useRouter();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -98,6 +102,53 @@ function AdminUsersScreen() {
     return new Date(dateString).toLocaleDateString();
   };
 
+  const exportToExcel = async () => {
+    try {
+      setExporting(true);
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Alert.alert("Error", "No authentication token found");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/admin/export-users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        Alert.alert("Error", errorData.message || "Failed to export data");
+        setExporting(false);
+        return;
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const fileName = `users_export_${Date.now()}.xlsx`;
+      const file = new FileSystem.File(FileSystem.Paths.cache, fileName);
+
+      await file.write(new Uint8Array(arrayBuffer));
+
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (isAvailable) {
+        await Sharing.shareAsync(file.uri, {
+          mimeType:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          dialogTitle: "Export Users Data",
+        });
+        Alert.alert("Success", "File exported successfully");
+      } else {
+        Alert.alert("Error", "Sharing is not available on this device");
+      }
+    } catch (error: any) {
+      Alert.alert("Error", `Failed to export: ${error.message}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -140,6 +191,26 @@ function AdminUsersScreen() {
           },
         ]}
       >
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={exportToExcel}
+          disabled={exporting || users.length === 0}
+        >
+          <LinearGradient
+            colors={["#27ae60", "#2ecc71"]}
+            style={styles.exportButtonGradient}
+          >
+            {exporting ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <>
+                <Ionicons name="download-outline" size={20} color="#fff" />
+                <Text style={styles.exportButtonText}>Export to Excel</Text>
+              </>
+            )}
+          </LinearGradient>
+        </TouchableOpacity>
+
         <ScrollView
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -161,9 +232,13 @@ function AdminUsersScreen() {
               >
                 <View style={styles.userCardContent}>
                   <View style={styles.userAvatar}>
-                    <Text style={styles.userInitials}>
-                      {getInitials(user.username)}
-                    </Text>
+                    {user.profileImage ? (
+                      <Image source={{ uri: user.profileImage }} style={styles.userAvatarImage} />
+                    ) : (
+                      <Text style={styles.userInitials}>
+                        {getInitials(user.username)}
+                      </Text>
+                    )}
                   </View>
 
                   <View style={styles.userInfo}>
@@ -239,6 +314,29 @@ const styles = StyleSheet.create({
     padding: 20,
     marginTop: -10,
   },
+  exportButton: {
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  exportButtonGradient: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    gap: 8,
+  },
+  exportButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
   emptyContainer: {
     alignItems: "center",
     marginTop: 80,
@@ -264,16 +362,22 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   userAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: "#3498db",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
+    overflow: "hidden",
+  },
+  userAvatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   userInitials: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#fff",
   },
@@ -281,13 +385,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   userName: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "600",
     color: "#2c3e50",
     marginBottom: 4,
   },
   userEmail: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#7f8c8d",
     marginBottom: 4,
   },
@@ -306,7 +410,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   roleText: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#27ae60",
     fontWeight: "600",
     textTransform: "uppercase",

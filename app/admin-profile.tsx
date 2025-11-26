@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { API_BASE_URL } from "../constants/Config";
 
 export default function AdminProfileScreen() {
   const [user, setUser] = useState<any>(null);
@@ -49,22 +50,20 @@ export default function AdminProfileScreen() {
   const loadUserData = async () => {
     try {
       const userData = await AsyncStorage.getItem("user");
-      const savedImage = await AsyncStorage.getItem("profileImage");
 
       if (userData) {
         const parsedUser = JSON.parse(userData);
         setUser(parsedUser);
 
-        // Check if user is actually admin
+        if (parsedUser.profileImage) {
+          setProfileImage(parsedUser.profileImage);
+        }
+
         if (parsedUser.role !== "admin") {
           Alert.alert("Access Denied", "You don't have admin privileges");
           router.replace("/");
           return;
         }
-      }
-
-      if (savedImage) {
-        setProfileImage(savedImage);
       }
     } catch (error) {
       Alert.alert("Error", "Failed to load user data");
@@ -107,17 +106,46 @@ export default function AdminProfileScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ["images"] as any,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: true,
       });
 
-      if (!result.canceled && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setImageLoading(true);
         const imageUri = result.assets[0].uri;
-        setProfileImage(imageUri);
-        await AsyncStorage.setItem("profileImage", imageUri);
+        const base64Image = result.assets[0].base64;
+        
+        if (base64Image) {
+          const token = await AsyncStorage.getItem("token");
+          if (token) {
+            try {
+              const response = await fetch(`${API_BASE_URL}/auth/upload-profile-image`, {
+                method: "PUT",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ profileImage: `data:image/jpeg;base64,${base64Image}` }),
+              });
+
+              if (response.ok) {
+                const data = await response.json();
+                setProfileImage(data.profileImage);
+                const userData = await AsyncStorage.getItem("user");
+                if (userData) {
+                  const user = JSON.parse(userData);
+                  user.profileImage = data.profileImage;
+                  await AsyncStorage.setItem("user", JSON.stringify(user));
+                }
+              }
+            } catch (error) {
+              Alert.alert("Error", "Failed to upload image to server");
+            }
+          }
+        }
         setImageLoading(false);
       }
     } catch (error) {
@@ -142,13 +170,42 @@ export default function AdminProfileScreen() {
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
+        base64: true,
       });
 
-      if (!result.canceled && result.assets[0]) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         setImageLoading(true);
         const imageUri = result.assets[0].uri;
-        setProfileImage(imageUri);
-        await AsyncStorage.setItem("profileImage", imageUri);
+        const base64Image = result.assets[0].base64;
+        
+        if (base64Image) {
+          const token = await AsyncStorage.getItem("token");
+          if (token) {
+            try {
+              const response = await fetch(`${API_BASE_URL}/auth/upload-profile-image`, {
+                method: "PUT",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ profileImage: `data:image/jpeg;base64,${base64Image}` }),
+              });
+
+              if (response.ok) {
+                const data = await response.json();
+                setProfileImage(data.profileImage);
+                const userData = await AsyncStorage.getItem("user");
+                if (userData) {
+                  const user = JSON.parse(userData);
+                  user.profileImage = data.profileImage;
+                  await AsyncStorage.setItem("user", JSON.stringify(user));
+                }
+              }
+            } catch (error) {
+              Alert.alert("Error", "Failed to upload image to server");
+            }
+          }
+        }
         setImageLoading(false);
       }
     } catch (error) {

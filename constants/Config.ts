@@ -10,7 +10,7 @@ const getApiBaseUrl = (): string => {
     return "http://localhost:5000/api";
   }
 
-  return "http://192.168.18.183:5000/api";
+  return "http://192.168.18.9:5000/api";
 };
 
 export const API_BASE_URL = getApiBaseUrl();

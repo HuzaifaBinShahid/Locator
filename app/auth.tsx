@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as LocalAuthentication from "expo-local-authentication";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -20,8 +21,6 @@ import {
 
 import { API_BASE_URL } from "../constants/Config";
 
-const { width, height } = Dimensions.get("window");
-
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
@@ -29,6 +28,8 @@ export default function AuthScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricEnabled, setBiometricEnabled] = useState(false);
   const router = useRouter();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -53,7 +54,84 @@ export default function AuthScreen() {
         useNativeDriver: true,
       }),
     ]).start();
+    checkBiometricAvailability();
   }, []);
+
+  useEffect(() => {
+    if (isLogin) {
+      checkBiometricStatus();
+    } else {
+      setBiometricEnabled(false);
+    }
+  }, [isLogin]);
+
+  const checkBiometricAvailability = async () => {
+    try {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+      setBiometricAvailable(hasHardware && isEnrolled);
+    } catch (error) {
+      setBiometricAvailable(false);
+    }
+  };
+
+  const checkBiometricStatus = async () => {
+    try {
+      const biometricEmail = await AsyncStorage.getItem("biometricEmail");
+      const biometricUserId = await AsyncStorage.getItem("biometricUserId");
+      
+      if (biometricEmail && biometricUserId) {
+        setBiometricEnabled(true);
+      } else {
+        setBiometricEnabled(false);
+      }
+    } catch (error) {
+      setBiometricEnabled(false);
+    }
+  };
+
+  const handleBiometricLogin = async () => {
+    try {
+      const biometricUserId = await AsyncStorage.getItem("biometricUserId");
+      if (!biometricUserId) {
+        Alert.alert("Error", "Biometric login not set up. Please login with credentials first.");
+        return;
+      }
+
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Authenticate to login",
+        cancelLabel: "Cancel",
+      });
+
+      if (result.success) {
+        setLoading(true);
+        const response = await fetch(`${API_BASE_URL}/auth/biometric-login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: biometricUserId }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.token) {
+          await AsyncStorage.setItem("token", data.token);
+          await AsyncStorage.setItem("user", JSON.stringify(data.user));
+
+          if (data.user && data.user.role === "admin") {
+            router.replace("/admin-home");
+          } else {
+            router.replace("/");
+          }
+        } else {
+          Alert.alert("Error", data.message || "Biometric login failed");
+        }
+      }
+    } catch (error: any) {
+      Alert.alert("Error", "Biometric authentication failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const switchMode = () => {
     Animated.sequence([
@@ -129,10 +207,22 @@ export default function AuthScreen() {
                 },
               ]}
             >
-              <Text style={styles.title}>Welcome</Text>
-              <Text style={styles.subtitle}>
-                {isLogin ? "Sign in to continue" : "Create your account"}
-              </Text>
+              <View style={styles.headerContainer}>
+                <View style={styles.titleContainer}>
+                  <Ionicons
+                    name={isLogin ? "happy-outline" : "gift-outline"}
+                    size={24}
+                    color={isLogin ? "#005b96" : "#4CAF50"}
+                    style={styles.headerIcon}
+                  />
+                  <Text style={styles.title}>
+                    {isLogin ? "Welcome Back" : "Welcome"}
+                  </Text>
+                </View>
+                <Text style={styles.subtitle}>
+                  {isLogin ? "Sign in to continue" : "Create your account"}
+                </Text>
+              </View>
 
               {!isLogin && (
                 <View style={styles.inputContainer}>
@@ -162,7 +252,7 @@ export default function AuthScreen() {
                 <View style={styles.inputWrapper}>
                   <Ionicons
                     name="mail-outline"
-                    size={20}
+                    size={16}
                     color={isLogin ? "#005b96" : "#4CAF50"}
                     style={styles.icon}
                   />
@@ -184,7 +274,7 @@ export default function AuthScreen() {
                 <View style={styles.inputWrapper}>
                   <Ionicons
                     name="lock-closed-outline"
-                    size={20}
+                    size={16}
                     color={isLogin ? "#005b96" : "#4CAF50"}
                     style={styles.icon}
                   />
@@ -209,6 +299,8 @@ export default function AuthScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
+
+      
 
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
@@ -243,6 +335,24 @@ export default function AuthScreen() {
                   </LinearGradient>
                 </TouchableOpacity>
               </View>
+
+              {isLogin && biometricAvailable && biometricEnabled && (
+                <View style={styles.biometricContainer}>
+                  <TouchableOpacity
+                    style={styles.biometricButton}
+                    onPress={handleBiometricLogin}
+                    disabled={loading}
+                  >
+                    <LinearGradient
+                      colors={["#4CAF50", "#2E7D32"]}
+                      style={styles.biometricButtonGradient}
+                    >
+                      <Ionicons name="finger-print" size={16} color="#fff" />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                  <Text style={styles.biometricText}>Use Biometric</Text>
+                </View>
+              )}
 
               <View style={styles.switchContainer}>
                 <Text style={styles.switchText}>
@@ -294,14 +404,22 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: "center",
-    marginBottom: 30,
+    marginBottom: 10,
+  },
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  headerIcon: {
+    marginRight: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#011f4b",
     textAlign: "center",
-    marginBottom: 30,
   },
   subtitle: {
     fontSize: 16,
@@ -313,7 +431,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "600",
     color: "#03396c",
     marginBottom: 8,
@@ -332,19 +450,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   icon: {
-    marginRight: 12,
+    marginRight: 8,
   },
   input: {
     flex: 1,
     paddingVertical: 16,
-    fontSize: 16,
+    fontSize: 14,
     color: "#011f4b",
   },
   eyeIcon: {
-    padding: 8,
+    padding: 0,
   },
   buttonContainer: {
-    marginTop: 20,
+    marginTop: 10,
   },
   button: {
     borderRadius: 12,
@@ -359,24 +477,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 16,
+    paddingVertical: 14,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
   },
   switchContainer: {
-    marginTop: 30,
-    alignItems: "center",
+    marginTop: 10,
+
   },
   switchText: {
     fontSize: 16,
     color: "#03396c",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
+    marginTop: 10,
   },
   switchButton: {
     color: "#005b96",
@@ -385,5 +508,33 @@ const styles = StyleSheet.create({
   switchTextBold: {
     fontWeight: "bold",
     color: "#006aff",
+  },
+  biometricContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  biometricButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 40,
+    overflow: "hidden",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
+  },
+  biometricButtonGradient: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  biometricText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: "#03396c",
+    fontWeight: "500",
   },
 });

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { API_BASE_URL } from "../constants/Config";
@@ -181,9 +182,13 @@ function AdminUserDetailsScreen() {
 
           <View style={styles.userHeaderInfo}>
             <View style={styles.userAvatarLarge}>
-              <Text style={styles.userInitialsLarge}>
-                {getInitials(user.username)}
-              </Text>
+              {user.profileImage ? (
+                <Image source={{ uri: user.profileImage }} style={styles.userAvatarLargeImage} />
+              ) : (
+                <Text style={styles.userInitialsLarge}>
+                  {getInitials(user.username)}
+                </Text>
+              )}
             </View>
             <Text style={styles.userNameHeader}>{user.username}</Text>
             <Text style={styles.userEmailHeader}>{user.email}</Text>
@@ -414,6 +419,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 12,
+    overflow: "hidden",
+  },
+  userAvatarLargeImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
   userInitialsLarge: {
     fontSize: 28,
