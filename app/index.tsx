@@ -4,8 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import * as Device from "expo-device";
 import { useEffect } from "react";
-
-const API_BASE_URL = "http://192.168.10.9:5000/api";
+import { API_BASE_URL } from "../constants/Config";
 
 export default function BiometricsScreen() {
   const router = useRouter();
@@ -63,17 +62,44 @@ export default function BiometricsScreen() {
       try {
         await AsyncStorage.setItem("deviceInfo", JSON.stringify(deviceInfo));
 
-        const response = await fetch(API_BASE_URL + "/saveDeviceInfo", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(deviceInfo),
-        });
+        // Get the authentication token
+        const token = await AsyncStorage.getItem("token");
+        
+        if (token) {
+          const response = await fetch(API_BASE_URL + "/saveDeviceInfo", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(deviceInfo),
+          });
 
-        if (!response.ok) {
-          console.error("Failed to save device info on backend");
+          if (response.ok) {
+            // Device info was successfully saved or updated
+            // Silently handle - this is expected behavior, no need to log
+            const data = await response.json();
+            // Only log in development for debugging
+            if (__DEV__) {
+              console.log("Device info:", data.message);
+            }
+          } else {
+            // Only log error if response is not ok (actual error occurred)
+            try {
+              const errorData = await response.json();
+              console.error("Failed to save device info:", errorData.message || "Unknown error");
+            } catch (e) {
+              console.error("Failed to save device info: HTTP", response.status);
+            }
+          }
+        } else {
+          // No token means user is not logged in yet, which is fine
+          // Device info will be saved after login
+          console.log("No token found, device info will be saved after authentication");
         }
       } catch (error) {
-        console.error("Error saving device info:", error);
+        // Only log network/connection errors, not expected update scenarios
+        console.error("Network error saving device info:", error);
       }
 
       checkUserRoleAndNavigate();

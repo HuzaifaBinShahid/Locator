@@ -13,8 +13,7 @@ import * as Location from "expo-location";
 import { LinearGradient } from "expo-linear-gradient";
 import { format } from "date-fns";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const API_BASE_URL = "http://192.168.10.9:5000/api";
+import { API_BASE_URL } from "../../constants/Config";
 
 export default function TabHomeScreen() {
   const [attendance, setAttendance] = useState(null);

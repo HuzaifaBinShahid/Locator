@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { API_BASE_URL } from "../constants/Config";
 
 const { width } = Dimensions.get("window");
 
@@ -72,7 +73,7 @@ export default function AdminHomeScreen() {
         return;
       }
 
-      const response = await fetch("http://192.168.10.9:5000/api/admin/stats", {
+      const response = await fetch(`${API_BASE_URL}/admin/stats`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

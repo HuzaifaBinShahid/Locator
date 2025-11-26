@@ -14,6 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
+import { API_BASE_URL } from "../constants/Config";
 
 function AdminUsersScreen() {
   const [users, setUsers] = useState<any[]>([]);
@@ -49,7 +50,7 @@ function AdminUsersScreen() {
         return;
       }
 
-      const response = await fetch("http://192.168.10.9:5000/api/admin/users", {
+      const response = await fetch(`${API_BASE_URL}/admin/users`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -10,17 +10,18 @@ import {
   Alert,
   RefreshControl,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "../constants/Config";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 function AdminUserDetailsScreen() {
   const [userDetails, setUserDetails] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-  const { userId, userName } = useLocalSearchParams();
+  const { userId } = useLocalSearchParams();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -51,7 +52,7 @@ function AdminUserDetailsScreen() {
       }
 
       const response = await fetch(
-        `http://192.168.10.9:5000/api/admin/users/${userId}`,
+        `${API_BASE_URL}/admin/users/${userId}`,
         {
           method: "GET",
           headers: {
@@ -441,7 +442,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     color: "#2c3e50",
-    marginBottom: 16,
+    marginVertical: 16,
   },
   statsGrid: {
     flexDirection: "row",

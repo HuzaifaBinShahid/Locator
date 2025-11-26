@@ -18,8 +18,9 @@ import {
   View,
 } from "react-native";
 
+import { API_BASE_URL } from "../constants/Config";
+
 const { width, height } = Dimensions.get("window");
-const API_BASE_URL = "http://192.168.10.9:5000/api/auth";
 
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
@@ -78,7 +79,7 @@ export default function AuthScreen() {
         ? { email, password }
         : { username, email, password };
 
-      const res = await fetch(API_BASE_URL + endpoint, {
+      const res = await fetch(API_BASE_URL + "/auth" + endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -89,7 +90,12 @@ export default function AuthScreen() {
       if (res.ok && data.token) {
         await AsyncStorage.setItem("token", data.token);
         await AsyncStorage.setItem("user", JSON.stringify(data.user));
-        router.replace("/");
+        
+        if (data.user && data.user.role === "admin") {
+          router.replace("/admin-home");
+        } else {
+          router.replace("/");
+        }
       } else {
         Alert.alert("Error", data.message || "Authentication failed");
       }
