@@ -1,16 +1,22 @@
 import * as Device from "expo-device";
 import { Platform } from "react-native";
 
+const PRODUCTION_API_URL = "https://locator-backend.vercel.app/api";
+
 const getApiBaseUrl = (): string => {
-  if (Platform.OS === "android" && !Device.isDevice) {
-    return "http://10.0.2.2:5000/api";
+  if (__DEV__) {
+    if (Platform.OS === "android" && !Device.isDevice) {
+      return "http://10.0.2.2:5000/api";
+    }
+
+    if (Platform.OS === "ios" && !Device.isDevice) {
+      return "http://localhost:5000/api";
+    }
+
+    return "http://192.168.18.9:5000/api";
   }
 
-  if (Platform.OS === "ios" && !Device.isDevice) {
-    return "http://localhost:5000/api";
-  }
-
-  return "http://192.168.18.9:5000/api";
+  return PRODUCTION_API_URL;
 };
 
 export const API_BASE_URL = getApiBaseUrl();
