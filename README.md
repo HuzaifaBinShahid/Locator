@@ -1,50 +1,136 @@
-# Welcome to your Expo app 👋
+# Locator
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native (Expo) mobile app for employee attendance tracking with GPS location, biometric authentication, and admin management.
 
-## Get started
+## Features
 
-1. Install dependencies
+### User
+- **Attendance Tracking** - Check-in/check-out with real-time GPS location and address
+- **Elapsed Time** - Live timer showing current session duration
+- **Biometric Login** - Fingerprint/Face ID authentication
+- **Device Info** - View device specifications synced to server
+- **Profile Management** - Profile picture upload, account settings
 
-   ```bash
-   npm install
-   ```
+### Admin
+- **Dashboard** - Quick stats (total users, admins)
+- **User Management** - View all users and their details
+- **Attendance History** - Per-user attendance records
+- **Export Data** - Download user data as Excel (.xlsx)
 
-2. Start the app
+## Tech Stack
 
-   ```bash
-   npx expo start
-   ```
+- **Framework:** React Native with Expo SDK 54
+- **Navigation:** Expo Router (file-based) + React Navigation
+- **Location:** expo-location (foreground permissions, reverse geocoding)
+- **Auth:** expo-local-authentication (biometrics) + JWT tokens
+- **Storage:** AsyncStorage for local persistence
+- **Styling:** React Native StyleSheet with dark/light theme support
 
-In the output, you'll find options to open the app in a
+## Screens
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+| Screen | File | Description |
+|--------|------|-------------|
+| Auth | `app/auth.tsx` | Login/signup with biometric option |
+| Home | `app/(tabs)/index.tsx` | Check-in/check-out with location |
+| Device | `app/(tabs)/device.tsx` | Device information display |
+| Profile | `app/(tabs)/profile.tsx` | User profile & settings |
+| Admin Home | `app/admin-home.tsx` | Admin dashboard |
+| Admin Users | `app/admin-users.tsx` | User list + export |
+| User Details | `app/admin-user-details.tsx` | User attendance history |
+| Admin Profile | `app/admin-profile.tsx` | Admin profile page |
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Getting Started
 
-## Get a fresh project
+### Prerequisites
+- Node.js 18+
+- Expo CLI (`npm install -g expo-cli`)
+- iOS: macOS with Xcode (for simulator/device)
+- Android: Android Studio with emulator or physical device
 
-When you're ready, run:
+### Installation
 
 ```bash
-npm run reset-project
+cd Locator
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Run
 
-## Learn more
+```bash
+# Start Expo dev server
+npm start
 
-To learn more about developing your project with Expo, look at the following resources:
+# Run on Android
+npm run android
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Run on iOS (macOS only)
+npm run ios
 
-## Join the community
+# Run on Web
+npm run web
+```
 
-Join our community of developers creating universal apps.
+### Configuration
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+The API base URL is configured in `constants/Config.ts`:
+- **Production:** `https://locator-backend.vercel.app/api`
+- **Development:** Automatically uses local backend based on platform
+
+## Building
+
+### Android APK (EAS Build)
+```bash
+npm install -g eas-cli
+eas login
+eas build:configure
+eas build --platform android --profile preview
+```
+
+### iOS (requires Mac + Apple Developer Account)
+```bash
+eas build --platform ios
+```
+
+### iOS Local (Mac only, own device)
+```bash
+npx expo run:ios --device
+```
+
+## Project Structure
+
+```
+Locator/
+  app/
+    _layout.tsx          # Root navigation layout
+    index.tsx            # Splash/loading screen
+    auth.tsx             # Authentication screen
+    home.tsx             # Legacy home screen
+    admin-home.tsx       # Admin dashboard
+    admin-users.tsx      # Admin user management
+    admin-user-details.tsx
+    admin-profile.tsx
+    (tabs)/
+      _layout.tsx        # Tab navigation layout
+      index.tsx          # Main attendance screen
+      device.tsx         # Device info screen
+      profile.tsx        # User profile screen
+  components/
+    Collapsible.tsx
+    ExternalLink.tsx
+    HapticTab.tsx
+    ThemedText.tsx
+    ThemedView.tsx
+    ParallaxScrollView.tsx
+    ui/                  # Platform-specific UI components
+  constants/
+    Config.ts            # API URL configuration
+    Colors.ts            # Theme colors
+  hooks/                 # Theme and color scheme hooks
+  assets/
+    fonts/               # Custom fonts (SpaceMono)
+    images/              # App icons, splash screens
+```
+
+## Backend
+
+See [Locator-Backend/README.md](../Locator-Backend/README.md) for the API server documentation.
