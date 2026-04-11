@@ -204,7 +204,7 @@ function AdminUsersScreen() {
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <>
-                <Ionicons name="download-outline" size={20} color="#fff" />
+                <Ionicons name="document-text-outline" size={20} color="#fff" />
                 <Text style={styles.exportButtonText}>Export to Excel</Text>
               </>
             )}

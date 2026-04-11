@@ -108,7 +108,7 @@ export default function AdminHomeScreen() {
       description: "View and export attendance reports",
       icon: "document-text-outline",
       color: "#2ecc71",
-      onPress: () => Alert.alert("Coming Soon", "Attendance reports feature"),
+      onPress: () => router.push("/admin-attendance-reports"),
     },
     {
       title: "System Settings",

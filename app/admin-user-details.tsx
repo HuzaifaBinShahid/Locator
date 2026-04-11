@@ -211,6 +211,27 @@ function AdminUserDetailsScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
+          {/* Identity Information Section */}
+          <View style={styles.identityCard}>
+            <View style={styles.identityHeader}>
+              <Ionicons name="card-outline" size={20} color="#3498db" />
+              <Text style={styles.identityTitle}>Identity Information</Text>
+            </View>
+            <View style={styles.identityRow}>
+              <Text style={styles.identityLabel}>NIE / DNI</Text>
+              <Text style={styles.identityValue}>
+                {user.nieOrDni || "Not provided"}
+              </Text>
+            </View>
+            <View style={styles.identityDivider} />
+            <View style={styles.identityRow}>
+              <Text style={styles.identityLabel}>Social Security No.</Text>
+              <Text style={styles.identityValue}>
+                {user.socialSecurityNumber || "Not provided"}
+              </Text>
+            </View>
+          </View>
+
           {/* Statistics Section */}
           <View style={styles.statsContainer}>
             <Text style={styles.sectionTitle}>Statistics (Last 30 Days)</Text>
@@ -445,6 +466,48 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     marginTop: -20,
+  },
+  identityCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  identityHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  identityTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#2c3e50",
+    marginLeft: 8,
+  },
+  identityRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  identityLabel: {
+    fontSize: 14,
+    color: "#7f8c8d",
+    fontWeight: "500",
+  },
+  identityValue: {
+    fontSize: 14,
+    color: "#2c3e50",
+    fontWeight: "600",
+  },
+  identityDivider: {
+    height: 1,
+    backgroundColor: "#ecf0f1",
   },
   statsContainer: {
     marginBottom: 30,
