@@ -11,20 +11,21 @@ export default function BiometricsScreen() {
 
   const checkUserRoleAndNavigate = async () => {
     try {
+      const token = await AsyncStorage.getItem("token");
       const userData = await AsyncStorage.getItem("user");
-      if (userData) {
-        const user = JSON.parse(userData);
-        // Navigate based on user role
-        if (user.role === "admin") {
-          router.replace("/admin-home");
-          return;
-        }
+      if (!token || !userData) {
+        router.replace("/auth");
+        return;
       }
-      // Default navigation for regular users
+      const user = JSON.parse(userData);
+      if (user.role === "admin") {
+        router.replace("/admin-home");
+        return;
+      }
       router.replace("/(tabs)");
     } catch (error) {
       console.error("Error checking user role:", error);
-      router.replace("/(tabs)");
+      router.replace("/auth");
     }
   };
 

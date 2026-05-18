@@ -4,7 +4,7 @@
     "slug": "Locator",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/splash.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "locator",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,12 @@
       "backgroundColor": "#000000"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.locator.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.locator.app",
@@ -40,7 +45,26 @@
         }
       ],
       "expo-web-browser",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Locator uses your location to record check-in and check-out for attendance."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Locator needs photo library access to upload your profile picture.",
+          "cameraPermission": "Locator uses the camera to capture your profile photo."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Locator uses Face ID to securely sign you in."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
