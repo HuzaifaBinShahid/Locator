@@ -15,9 +15,16 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.locator.app",
-      "buildNumber": "1",
+      "bundleIdentifier": "ai.accendia.locator",
+      "buildNumber": "2",
       "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Locator uses your location to record attendance and track field activity.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Locator uses your location to record attendance and track field activity.",
+        "NSLocationAlwaysUsageDescription": "Locator uses your location to record attendance and track field activity.",
+        "NSCameraUsageDescription": "Locator uses the camera to capture attendance photos.",
+        "NSPhotoLibraryUsageDescription": "Locator needs photo library access to attach images.",
+        "NSPhotoLibraryAddUsageDescription": "Locator saves exported sheets and images to your photo library.",
+        "NSFaceIDUsageDescription": "Locator uses Face ID for secure biometric login.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },

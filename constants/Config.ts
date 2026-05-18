@@ -1,1 +1,25 @@
-export const API_BASE_URL = "https://locator-backend-g5v6.vercel.app/api";
+import * as Device from "expo-device";
+import { Platform } from "react-native";
+
+/** Production API — override with EXPO_PUBLIC_API_URL when backend URL changes. */
+const PRODUCTION_API_URL =
+  process.env.EXPO_PUBLIC_API_URL ??
+  "https://locator-backend-g5v6.vercel.app/api";
+
+const getApiBaseUrl = (): string => {
+  if (__DEV__) {
+    if (Platform.OS === "android" && !Device.isDevice) {
+      return "http://10.0.2.2:5000/api";
+    }
+
+    if (Platform.OS === "ios" && !Device.isDevice) {
+      return "http://localhost:5000/api";
+    }
+
+    return "http://192.168.18.9:5000/api";
+  }
+
+  return PRODUCTION_API_URL;
+};
+
+export const API_BASE_URL = getApiBaseUrl();
